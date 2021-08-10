@@ -6,7 +6,7 @@ import reportWebVitals from "./reportWebVitals";
 import parse from "parse";
 
 parse.serverURL = "http://localhost:1337/parse";
-parse.initialize("APPLICATION_ID", "", "MASTER_KEY");
+parse.initialize("myAppId", "", "");
 
 ReactDOM.render(
   <React.StrictMode>

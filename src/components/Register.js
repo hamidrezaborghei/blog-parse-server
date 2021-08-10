@@ -45,6 +45,7 @@ const Register = (props) => {
         value={RegisterForm.values.username}
       />
       <TextField
+        type="password"
         placeholder="password"
         name="password"
         onChange={RegisterForm.handleChange}

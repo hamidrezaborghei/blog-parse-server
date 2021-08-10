@@ -16,24 +16,49 @@ import { useEffect, useState } from "react";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Write from "./components/Write";
+import moment from 'moment'
+
+
+
 function App() {
   const [blogs, setBlogs] = useState([]);
   const [openLogin, setOpenLogin] = useState(false);
   const [openRegister, setOpenRegister] = useState(false);
   const [openWrite, setOpenWrite] = useState(false);
   const [onlyMyPost, setOnlyMyPost] = useState(false);
-  const Blog = Parse.Object.extend("Blog");
+  const [subsc , setSubsc] = useState()
   const currentUser = Parse.User.current();
+
+  const Blog = Parse.Object.extend("Blog");
+
   useEffect(() => {
     const query = new Parse.Query(Blog);
-
-    if (onlyMyPost) {
-      query.equalTo("user", currentUser._getId());
+    query.descending("createdAt");
+    if(subsc)
+    {
+      subsc.unsubscribe();
     }
-    query.findAll().then((blogs) => {
-      setBlogs(blogs);
-    });
-  }, [openWrite, onlyMyPost]);
+    async function fetchMyAPI() {
+      let subs = await query.subscribe();
+      setSubsc(subs);
+    }
+    if(onlyMyPost)
+    {
+      query.equalTo('user',currentUser._getId())
+    }
+    fetchMyAPI();
+    query.find().then(datas => {
+      setBlogs(datas);
+    })
+  },[onlyMyPost])
+
+  useEffect(() => {
+    if(subsc){
+    subsc.on("create", obj => {
+      setBlogs(value => [obj,...value])
+    })
+  }
+  },[subsc])
 
   return (
     <Container>
@@ -52,7 +77,11 @@ function App() {
           flex: 1,
         }}
       >
-        <Box
+        {currentUser && blogs.length === 0 ? (
+          <Typography>No Content</Typography>
+        ) : currentUser ? (
+          <>
+          <Box
           style={{
             justifyContent: "flex-start",
             display: "flex",
@@ -68,13 +97,10 @@ function App() {
           />
           <Typography>Only my posts</Typography>
         </Box>
-        {currentUser && blogs.length === 0 ? (
-          <Typography>No Content</Typography>
-        ) : currentUser ? (
           <Box style={{ display: "flex", width: "100%" }}>
             <List style={{ flex: 1 }}>
               {blogs.map((item) => (
-                <ListItem>
+                <ListItem key={item.id}>
                   <Card
                     style={{
                       width: "100%",
@@ -83,13 +109,17 @@ function App() {
                       padding: 16,
                     }}
                   >
-                    <Typography>{item.get("text")}</Typography>
-                    <Typography>{item.get("user")}</Typography>
+                    <Typography variant="h6">{item.get("text")}</Typography>
+                    <Box style={{flex : 1,display : 'flex',justifyContent : 'space-between',alignItems : 'center'}}>
+                    <Typography style={{color : 'GrayText'}} variant="subtitle1">{item.get("user")}</Typography>
+                    <Typography style={{color : 'gray'}} variant="subtitle2">{moment(item.createdAt).format('YYYY-MM-DD HH:mm:ss')}</Typography>
+                    </Box>
                   </Card>
                 </ListItem>
               ))}
             </List>
           </Box>
+          </>
         ) : (
           <Typography>Please Login First</Typography>
         )}

@@ -35,6 +35,7 @@ const Login = (props) => {
         value={LoginForm.values.username}
       />
       <TextField
+      type="password"
         placeholder="password"
         name="password"
         onChange={LoginForm.handleChange}

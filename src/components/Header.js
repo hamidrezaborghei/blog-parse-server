@@ -29,6 +29,7 @@ const Header = (props) => {
           <Button
             onClick={() => {
               Parse.User.logOut();
+              window.location.reload();
             }}
           >
             <Typography>LogOut</Typography>
